@@ -1,14 +1,7 @@
-import {
-  boolean,
-  timestamp,
-  pgTable,
-  text,
-  primaryKey,
-  integer,
-} from "drizzle-orm/pg-core";
-import type { AdapterAccountType } from "next-auth/adapters";
-
-export const users = pgTable("users", {
+import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import type { AdapterAccountType } from "next-auth/adapters"
+ 
+export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -16,8 +9,17 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
-});
+})
 
+export const posts = pgTable ("post", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  image: text("image"),
+  user: text("user").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt").notNull().defaultNow()
+})
+ 
 export const accounts = pgTable(
   "account",
   {
@@ -42,16 +44,16 @@ export const accounts = pgTable(
       }),
     },
   ]
-);
-
+)
+ 
 export const sessions = pgTable("session", {
   sessionToken: text("sessionToken").primaryKey(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
-});
-
+})
+ 
 export const verificationTokens = pgTable(
   "verificationToken",
   {
@@ -66,8 +68,8 @@ export const verificationTokens = pgTable(
       }),
     },
   ]
-);
-
+)
+ 
 export const authenticators = pgTable(
   "authenticator",
   {
@@ -89,4 +91,4 @@ export const authenticators = pgTable(
       }),
     },
   ]
-);
+)
